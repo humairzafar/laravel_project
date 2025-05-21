@@ -9,15 +9,13 @@ class Customers extends Controller
 {
     public function index()
     {
-        $title ="create customer";
-        $url=url('/humair');
-        $data =compact('url','title');
-        return view('customer')->with($data);
+        $title = "Create Customer";
+        $url = url('/humair');
+        return view('customer', compact('url', 'title'));
     }
 
     public function store(Request $request)
     {
-        // Validate the input
         $validated = $request->validate([
             'name' => 'required|string',
             'email' => 'required|email',
@@ -26,83 +24,97 @@ class Customers extends Controller
             'country' => 'required|string',
         ]);
 
-        // Save the data
+        $genderMap = [
+            'male' => 'M',
+            'female' => 'F',
+            'other' => 'O'
+        ];
+
         $customer = new Customertable;
         $customer->name = $request->name;
         $customer->email = $request->email;
-        $customer->gender = $request->gender;
+        $customer->gender = $genderMap[$request->gender];
         $customer->address = $request->address;
         $customer->country = $request->country;
-        $genderMap = [
-            'male' => 'm',
-            'female' => 'f',
-        ];
-        
-        $customer->gender = $genderMap[$request->gender];
         $customer->save();
-        return redirect('/humair/view');
 
-        // return redirect('/humair/view')->back()->with('success', 'Customer saved successfully!');
+        return redirect('/humair/view');
     }
-    public function view()
+
+    public function view(Request $request)
     {
-        $customers = Customertable::all();
-        // echo "<pre>";
-        // return print_r($customers);
-        // echo "</pre>";
-        // die;
-        $data =compact('customers');
-        return view('customer-view')->with($data);
+        $search = $request->input('search');
+
+        $query = Customertable::query();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('email', 'like', "%$search%");
+            });
+        }
+
+        $customers = $query->paginate(10);
+
+        return view('customer-view', compact('customers', 'search'));
     }
+
     public function trash()
     {
         $customers = Customertable::onlyTrashed()->get();
-        $data =compact('customers');
-        return view('customer-trash')->with($data);
+        return view('customer-trash', compact('customers'));
     }
+
     public function delete($id)
     {
         Customertable::find($id)->delete();
         return redirect()->back();
-    
     }
+
     public function forceDelete($id)
     {
         Customertable::withTrashed()->find($id)->forceDelete();
         return redirect()->back();
     }
+
     public function restore($id)
     {
         Customertable::withTrashed()->find($id)->restore();
         return redirect()->back();
-    
     }
+
     public function edit($id)
     {
         $customer = Customertable::find($id);
-        $title ="Update customer";
-
-            $url= url('/humair/update') . "/". $id;
-            $data =compact ('customer','url','title');
-            return view('customer')->with($data);
+        $title = "Update Customer";
+        $url = url('/humair/update/' . $id);
+        return view('customer', compact('customer', 'url', 'title'));
     }
-    public function update($id ,Request $request)
+
+    public function update($id, Request $request)
     {
-        $customer = Customertable::find($id);
-        $customer->name = $request['name'];
-        $customer->email = $request['email'];
-        $customer->gender = $request->gender;
-        $customer->address = $request['address'];
-        $customer->country = $request['country'];
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email',
+            'gender' => 'required|in:male,female,other',
+            'address' => 'required|string',
+            'country' => 'required|string',
+        ]);
+
         $genderMap = [
             'male' => 'M',
             'female' => 'F',
-        
+            'other' => 'O'
         ];
-        
+
+        $customer = Customertable::find($id);
+        $customer->name = $request->name;
+        $customer->email = $request->email;
         $customer->gender = $genderMap[$request->gender];
+        $customer->address = $request->address;
+        $customer->country = $request->country;
         $customer->save();
+
         return redirect('/humair/view');
-        
     }
 }

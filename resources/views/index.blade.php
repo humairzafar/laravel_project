@@ -28,7 +28,7 @@
             <a class="nav-link active text-white" href="{{url('/')}}" aria-current="page"
                 >Active link</a>
             <a class="nav-link text-danger" href="{{url('/humair')}}">Insert</a>
-            <a class="nav-link text-danger" href="{{url('/humair/view')}}">View Data</a>
+            <a class="nav-link text-danger" href="{{url('/maidy/view')}}">View Data</a>
         </nav>
         
         <script

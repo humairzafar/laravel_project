@@ -6,6 +6,8 @@ use App\Http\Controllers\DemoController;
 use App\Http\Controllers\SingleActionController;
 use App\Http\Controllers\MyResourceController;
 use App\Http\Controllers\RegisteController;
+use App\Http\Controllers\ContactController;
+
 use App\Models\Customertable;
 Use App\Http\Controllers\Customers;
 
@@ -42,17 +44,23 @@ Route::get('/', function()
 {
     return view('index');
 });
-
+Route::get('/upload', function()
+{
+    return view('upload');
+});
+Route::post('/hello', [ContactController::class, 'hello']);
 Route::get('/humair', [Customers::class, 'index']); 
 Route::post('/humair', [Customers::class, 'store']);
-Route::get('/humair/view', [Customers::class, 'view']);
-Route::get('/humair/trash', [Customers::class, 'trash']);
-Route::get('/humair/delete/{id}', [Customers::class, 'delete']);
-Route::get('/humair/forceDetele/{id}', [Customers::class, 'forceDelete']);
-Route::get('/humair/edit/{id}', [Customers::class, 'edit'])->name('humair.edit');
-Route::get('/humair/restore/{id}', [Customers::class, 'restore'])->name('humair.restore');
-Route::post('/humair/update/{id}', [Customers::class, 'update'])->name('humair.update');
-
+Route::Group(['prefix' => '/maidy'],function()
+{
+Route::get('view', [Customers::class, 'view']);
+Route::get('/rash', [Customers::class, 'trash']);
+Route::get('delete/{id}', [Customers::class, 'delete']);
+Route::get('forceDetele/{id}', [Customers::class, 'forceDelete']);
+Route::get('edit/{id}', [Customers::class, 'edit'])->name('humair.edit');
+Route::get('restore/{id}', [Customers::class, 'restore'])->name('humair.restore');
+Route::post('update/{id}', [Customers::class, 'update'])->name('humair.update');
+});
 Route::get('get-all-session',function()
 {
     $session= session()->all();
